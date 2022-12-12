@@ -1,0 +1,95 @@
+#Statistical Analysis for "Circulating concentrations of persistent organic pollutants (POP) subsequent to a prescribed diet in aquarium-based bottlenose dolphins (Tursiops truncatus)"
+#Analysis was completed using RStudio 2022.07.2+576 running R version 4.2.0 and MetaboAnalyst v5.0.
+
+##install.packages("NADA")
+#install.packages("NADA2")
+#https://practicalstats.com/resources/NADA-resources/NADAforR_Examples.pdf
+
+#Open packages
+library(NADA2)
+
+#Read in data
+Stats_Targeted_Analysis <- read_excel("~FILEPATH.xlxs, sheet = "FileName")
+View(Stats_Targeted_Analysis)
+
+#Compute an ECDF and Distribution Parameters for Censored Data using NADA2
+#Each PCB has to be done individually.  Used calculated mean to replace LOD values
+cfit(Stats_Targeted_Analysis$PCB8, Stats_Targeted_Analysis$PCB8cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB18, Stats_Targeted_Analysis$PCB18cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB28, Stats_Targeted_Analysis$PCB28cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB44, Stats_Targeted_Analysis$PCB44cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB49, Stats_Targeted_Analysis$PCB49cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB52, Stats_Targeted_Analysis$PCB52cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB66, Stats_Targeted_Analysis$PCB66cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB82, Stats_Targeted_Analysis$PCB82cen, Cdf=TRUE, printstat=TRUE)
+
+cfit(Stats_Targeted_Analysis$PCB87, Stats_Targeted_Analysis$PCB87cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB92, Stats_Targeted_Analysis$PCB92cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB95_PCB121, Stats_Targeted_Analysis$PCB95cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB101, Stats_Targeted_Analysis$PCB101cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB105, Stats_Targeted_Analysis$PCB105cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB110, Stats_Targeted_Analysis$PCB110cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB118, Stats_Targeted_Analysis$PCB118cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB128, Stats_Targeted_Analysis$PCB128cen, Cdf=TRUE, printstat=TRUE)
+
+cfit(Stats_Targeted_Analysis$PCB130, Stats_Targeted_Analysis$PCB130cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB132, Stats_Targeted_Analysis$PCB132cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB138, Stats_Targeted_Analysis$PCB138cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB149, Stats_Targeted_Analysis$PCB149cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB151, Stats_Targeted_Analysis$PCB151cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB153_146, Stats_Targeted_Analysis$PCB153cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB163, Stats_Targeted_Analysis$PCB163cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB170, Stats_Targeted_Analysis$PCB170cen, Cdf=TRUE, printstat=TRUE)
+
+cfit(Stats_Targeted_Analysis$PCB174, Stats_Targeted_Analysis$PCB174cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB175, Stats_Targeted_Analysis$PCB175cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB177, Stats_Targeted_Analysis$PCB177cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB178, Stats_Targeted_Analysis$PCB178cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB180, Stats_Targeted_Analysis$PCB180cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB187, Stats_Targeted_Analysis$PCB187cen, Cdf=TRUE, printstat=TRUE)
+cfit(Stats_Targeted_Analysis$PCB193, Stats_Targeted_Analysis$PCB193cen, Cdf=TRUE, printstat=TRUE)
+
+#References:
+#Critical Review Toward Improved Analysis of Concentration Data: Embracing Nondetects
+#Statistical methods for assays with limits of detection: Serum bile acid as a differentiator between patients with normal colons, adenomas, and colorectal cancer
+#Dissertation, Statistical Methodology for Data with Multiple Limits of Detection
+#The K-M estimate of the mean can be found by integrating under the K-M survival curve. The estimate of the mean will be used in the simulations described in Chapter 4.
+
+#Metabolyte analysis
+#Load package or use online site.
+#install.packages("MetaboAnalystR")
+library(MetaboAnalystR)
+
+#Load data and normalize.
+mSet<-InitDataObjects("conc", "stat", TRUE)
+mSet<-Read.TextData(mSet, ""~/Graduate Students/Audrey_Bolanos/Stats_Dolphin_Metaboanalyst.csv, "rowp", "disc");
+mSet<-SanityCheckData(mSet)
+mSet<-SanityCheckData(mSet)
+mSet<-ReplaceMin(mSet);
+mSet<-PreparePrenormData(mSet)
+mSet<-Normalization(mSet, "NULL", "LogNorm", "NULL", ratio=FALSE, ratioNum=20)
+mSet<-PlotNormSummary(mSet, "norm_0_", "png", 72, width=NA)
+mSet<-PlotSampleNormSummary(mSet, "snorm_0_", "png", 72, width=NA)
+mSet<-PlotNormSummary(mSet, "norm_0_", "png", 300, width=NA)
+
+#Two Sample paired t-tests with equal variance and a false discovery rate (FDR) of 0.1 selected based upon Comprehensive Comparative Analysis of Local False Discovery Rate Control Methods available at  https://www.mdpi.com/2218-1989/11/1/53/htm
+mSet<-UpdateLoadingCmpd(mSet, "PCB95_PCB121")
+mSet<-PlotCmpdSummary(mSet, "PCB95_PCB121","NA", 4, "png", 72, width=NA)
+mSet<-Ttests.Anal(mSet, F, 0.1, TRUE, TRUE, "fdr", FALSE)
+mSet<-PlotTT(mSet, "tt_6_", "png", 72, width=NA)
+
+###In OPLS-DA, a regression model is constructed between the multivariate data and a response variable that only contains class information. 
+###The obvious advantage of OPLS-DA compared with PLS-DA is that a single component serves as a predictor for the class, while the other components describe 
+###the variation orthogonal to the first predictive component. Wiklund et al. used the terms between treatment variation to depict the average effect of 
+###treatment and within treatment variation to describe the systematic remainder variation, which is not related to the treatment. The treatment effect is 
+###supposed to be equal for all subjects although the magnitude is allowed to be different for each subject. Treatment effects that differ from the average 
+###treatment effect are referred to as within treatment variation. 
+
+mSet<-PlotOPLS.MDL(mSet, "opls_mdl_0_", "png", 72, width=NA)
+mSet<-PlotOPLS2DScore(mSet, "opls_score2d_1_", "png", 72, width=NA, 1,2,0.95,1,0)
+
+#orthogonal PLS-DA Imp Features plot
+mSet<-PlotOPLS.Imp(mSet, "opls_imp_2_", "png", 300, width=NA, "vip", "tscore", 15,FALSE)
+mSet<-PlotOPLS.Imp(mSet, "opls_imp_3_", "png", 72, width=NA, "vip", "tscore", 15,FALSE)
+
+
