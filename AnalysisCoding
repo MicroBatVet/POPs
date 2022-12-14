@@ -13,7 +13,7 @@ Stats_Targeted_Analysis <- read_excel("~FILEPATH.xlxs, sheet = "FileName")
 View(Stats_Targeted_Analysis)
 
 #Compute an ECDF and Distribution Parameters for Censored Data using NADA2
-#Each PCB has to be done individually.  Used calculated mean to replace LOD values
+#Each PCB has to be done individually.  Used calculated mean to replace LOD values using the Kaplan-Meier statistical method.
 cfit(Stats_Targeted_Analysis$PCB8, Stats_Targeted_Analysis$PCB8cen, Cdf=TRUE, printstat=TRUE)
 cfit(Stats_Targeted_Analysis$PCB18, Stats_Targeted_Analysis$PCB18cen, Cdf=TRUE, printstat=TRUE)
 cfit(Stats_Targeted_Analysis$PCB28, Stats_Targeted_Analysis$PCB28cen, Cdf=TRUE, printstat=TRUE)
@@ -73,18 +73,32 @@ mSet<-PlotSampleNormSummary(mSet, "snorm_0_", "png", 72, width=NA)
 mSet<-PlotNormSummary(mSet, "norm_0_", "png", 300, width=NA)
 
 #Two Sample paired t-tests with equal variance and a false discovery rate (FDR) of 0.1 selected based upon Comprehensive Comparative Analysis of Local False Discovery Rate Control Methods available at  https://www.mdpi.com/2218-1989/11/1/53/htm
+#Analysis type is paired with group vairance equal.
 mSet<-UpdateLoadingCmpd(mSet, "PCB95_PCB121")
 mSet<-PlotCmpdSummary(mSet, "PCB95_PCB121","NA", 4, "png", 72, width=NA)
 mSet<-Ttests.Anal(mSet, F, 0.1, TRUE, TRUE, "fdr", FALSE)
 mSet<-PlotTT(mSet, "tt_6_", "png", 72, width=NA)
+#Results were downloaded in the MetaboAnalyst Univariate Analysis Result Report
+#The report noted that Wilxocon Mann Whitney Test was used for PCB28/31, 49, 82, 105, 130, 153/146, 170, 174, 177, and 178 whereas all others were t-test.
 
-###In OPLS-DA, a regression model is constructed between the multivariate data and a response variable that only contains class information. 
-###The obvious advantage of OPLS-DA compared with PLS-DA is that a single component serves as a predictor for the class, while the other components describe 
-###the variation orthogonal to the first predictive component. Wiklund et al. used the terms between treatment variation to depict the average effect of 
-###treatment and within treatment variation to describe the systematic remainder variation, which is not related to the treatment. The treatment effect is 
-###supposed to be equal for all subjects although the magnitude is allowed to be different for each subject. Treatment effects that differ from the average 
-###treatment effect are referred to as within treatment variation. 
+#To make plot with PCB on x-axis, first load packages and data
+library(ggplot2)
+library(readxl)
+ttest <- read_excel("~/path_to_file.xlsx")
 
+#Categorize PCBs as significant and non-significant to allow colors to document this on graph
+ttest$Threshold<-cut(ttest$y,breaks=c(-Inf, 1.05 ,Inf), labels = c(" p > 0.05", "p < 0.05"))
+View(ttest)
+
+#Plot T-Test Results
+ggplot(ttest, aes(factor(x),y, color= Threshold)) + geom_point(size=3, shape=15) + labs(title="", x="Compounds", y="-log10 (raw P-value)") + theme_bw() + scale_x_discrete(labels=c('PCB8', 'PCB18', 'PCB28_PCB31', 'PCB44','PCB49',
++                                                                                                                                                                                    'PCB52', 'PCB66', 'PCB82', 'PCB87', 'PCB92', 'PCB95/PCB121',
++                                                                                                                                                                                    'PCB99', 'PCB101', 'PCB105', 'PCB110', 'PCB118','PCB128','PCB130',
++                                                                                                                                                                                    'PCB132','PCB138','PCB149','PCB151','PCB153/146','PCB163',
++                                                                                                                                                                                    'PCB170','PCB174','PCB175','PCB177','PCB178','PCB180','PCB187',
++                                                                                                                                                                                    'PCB193','b-BHC','DDE'), guide= guide_axis(angle = 90))
+
+###OPLS-DA
 mSet<-PlotOPLS.MDL(mSet, "opls_mdl_0_", "png", 72, width=NA)
 mSet<-PlotOPLS2DScore(mSet, "opls_score2d_1_", "png", 72, width=NA, 1,2,0.95,1,0)
 
